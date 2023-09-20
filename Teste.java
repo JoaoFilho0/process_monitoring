@@ -114,6 +114,15 @@ public class Teste {
 
 	public static void writeResultOnLinux(List<Float> listaRegistroMemoria, List<Float> listaRegistroCpu) throws IOException {
 		DecimalFormat formatador = new DecimalFormat("0.00");
+		final int SLA_MIN_MEMORY = 1;
+		final int SLA_MAX_MEMORY = 90; 
+		final int SLA_AVERAGE_MEMORY = 45;
+
+		final int SLA_MIN_CPU = 1;
+		final int SLA_MAX_CPU = 98; 
+		final int SLA_AVERAGE_CPU = 35;
+
+		final int SLA_STANDARD_DEVIATION = 1;
 
 		float consumoMedioDeMemoria = (float) listaRegistroMemoria
 				.stream()
@@ -136,27 +145,27 @@ public class Teste {
 		float desvioPadraoDeMemoria = desvioPadrao(listaRegistroMemoria);
 		float desvioPadraoDeCpu = desvioPadrao(listaRegistroCpu);
 
-		System.out.println("Consumo minimo de memoria: " + formatador.format(consumoMinimoDeMemoria) + "%");
-		System.out.println("Consumo minimo de CPU: " + formatador.format(consumoMinimoDeCpu) + "%\n");
+		System.out.println("Consumo minimo de memoria: " + formatador.format(consumoMinimoDeMemoria) + "% | SLA: " + SLA_MIN_MEMORY + "%" );
+		System.out.println("Consumo minimo de CPU: " + formatador.format(consumoMinimoDeCpu) + "% | SLA: " + SLA_MIN_CPU + "%\n" );
 
-		System.out.println("Consumo maximo de memoria: " + formatador.format(consumoMaximoDeMemoria) + "%");
-		System.out.println("Consumo maximo de CPU: " + formatador.format(consumoMaximoDeCpu) + "%\n");
+		System.out.println("Consumo maximo de memoria: " + formatador.format(consumoMaximoDeMemoria) + "% | SLA: " + SLA_MAX_MEMORY + "%" );
+		System.out.println("Consumo maximo de CPU: " + formatador.format(consumoMaximoDeCpu) + "% | SLA: " + SLA_MAX_CPU + "%\n" );
 
-		System.out.println("Consumo medio de memoria: " + formatador.format(consumoMedioDeMemoria) + "%");
-		System.out.println("Consumo medio de CPU: " + formatador.format(consumoMedioDeCpu) + "%\n");
+		System.out.println("Consumo medio de memoria: " + formatador.format(consumoMedioDeMemoria) + "% | SLA: " + SLA_AVERAGE_MEMORY + "%" );
+		System.out.println("Consumo medio de CPU: " + formatador.format(consumoMedioDeCpu) + "% | SLA: " + SLA_AVERAGE_CPU + "%\n" );
 
-		System.out.println("Desvio padrão de memória: " + formatador.format(desvioPadraoDeMemoria));
-		System.out.println("Desvio padrão de CPU: " + formatador.format(desvioPadraoDeCpu) + "\n");
+		System.out.println("Desvio padrao de memoria: " + formatador.format(desvioPadraoDeMemoria) + " | SLA: " + SLA_STANDARD_DEVIATION + "%" );
+		System.out.println("Desvio padrão de CPU: " + formatador.format(desvioPadraoDeCpu) + " | SLA: " + SLA_STANDARD_DEVIATION + "\n");
 
 		BufferedWriter writer = new BufferedWriter(new FileWriter("arquivoDeMonitoramento.txt", true));
-		writer.append("\n\nConsumo minimo de memoria: " + formatador.format(consumoMinimoDeMemoria) + "%");
-		writer.append("\nConsumo maximo de memoria: " + formatador.format(consumoMaximoDeMemoria) + "%");
-		writer.append("\nConsumo medio de memoria: " + formatador.format(consumoMedioDeMemoria) + "%");
-		writer.append("\nDesvio padrao de memoria: " + formatador.format(desvioPadraoDeMemoria) + "%");
-		writer.append("\n\nConsumo minimo de CPU: " + formatador.format(consumoMinimoDeCpu) + "%");
-		writer.append("\nConsumo maximo de CPU: " + formatador.format(consumoMaximoDeCpu) + "%");
-		writer.append("\nConsumo medio de CPU: " + formatador.format(consumoMedioDeCpu) + "%");
-		writer.append("\nDesvio padrao de CPU: " + formatador.format(desvioPadraoDeCpu) + "%");
+		writer.append("\n\nConsumo minimo de memoria: " + formatador.format(consumoMinimoDeMemoria) + "% | SLA: " + SLA_MIN_MEMORY + "%" );
+		writer.append("\nConsumo maximo de memoria: " + formatador.format(consumoMaximoDeMemoria) + "% | SLA: " + SLA_MAX_MEMORY + "%" );
+		writer.append("\nConsumo medio de memoria: " + formatador.format(consumoMedioDeMemoria) + "% | SLA: " + SLA_AVERAGE_MEMORY + "%" );
+		writer.append("\nDesvio padrao de memoria: " + formatador.format(desvioPadraoDeMemoria) + " | SLA: " + SLA_STANDARD_DEVIATION + "%" );
+		writer.append("\n\nConsumo minimo de CPU: " + formatador.format(consumoMinimoDeCpu) + "% | SLA: " + SLA_MIN_CPU );
+		writer.append("\nConsumo maximo de CPU: " + formatador.format(consumoMaximoDeCpu) + "% | SLA: " + SLA_MAX_CPU);
+		writer.append("\nConsumo medio de CPU: " + formatador.format(consumoMedioDeCpu) + "% | SLA: " + SLA_AVERAGE_CPU );
+		writer.append("\nDesvio padrão de CPU: " + formatador.format(desvioPadraoDeCpu) + " | SLA: " + SLA_STANDARD_DEVIATION);
 		writer.close();
 	}
 
@@ -212,6 +221,7 @@ public class Teste {
 			for (int j = 0; j < array.size(); j++) {
 				if (!Objects.equals(array.get(i), array.get(j)) && i != j) {
 					tudoIgual = false;
+					break;
 				}
 			}
 		}
