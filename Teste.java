@@ -38,7 +38,7 @@ public class Teste {
 
 			if (scanner.hasNextInt()) {
 				tempoDeMonitoramento = scanner.nextInt();
-				System.out.println("Os dados serão medidos a cada 10 segundos até chegar em " + tempoDeMonitoramento);
+				System.out.println("Os dados serão medidos a cada 10 segundos até chegar em " + tempoDeMonitoramento + " minuto(s)");
 				tempoDeMonitoramento *= 6;
 
 				break;
@@ -85,10 +85,12 @@ public class Teste {
 
 				} else {
 					System.out.println("O processo com PID " + pid + " não foi encontrado.");
+					break;
 				}
 			} catch (IOException e) {
 				System.out.println(
 						"Ocorreu algum erro ao tentar capturar ou escrever as informações do processo no arquivo");
+				break;
 
 			} finally {
 				if (process != null) {
@@ -105,7 +107,9 @@ public class Teste {
 			}
 		}
 
-		writeResultOnLinux(listaRegistroMemoria, listaRegistroCpu);
+		if(!listaRegistroMemoria.isEmpty() && !listaRegistroCpu.isEmpty()){
+			writeResultOnLinux(listaRegistroMemoria, listaRegistroCpu);
+		}
 	}
 
 	public static void writeResultOnLinux(List<Float> listaRegistroMemoria, List<Float> listaRegistroCpu) throws IOException {
