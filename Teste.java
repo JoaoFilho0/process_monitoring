@@ -6,10 +6,13 @@ import java.util.*;
 
 public class Teste {
 
+	static final String  INTERFACE_NAME = "wlo1";
+
 	public static void main(String[] args) {
 		int pid;
 		int tempoDeMonitoramento;
 		String osNome = System.getProperty("os.name");
+		
 
 		if (!osNome.startsWith("Linux")) {
 			System.out.println(
@@ -227,4 +230,25 @@ public class Teste {
 		}
 		return tudoIgual;
 	}
+
+	public static void extractBytesForInterface(String data) {
+        String[] lines = data.split("\n");
+
+        for (String line : lines) {
+            if (line.contains(INTERFACE_NAME)) {
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 10) {
+                    float receivedBytes = Float.parseFloat(parts[2]);
+                    float transmittedBytes = Float.parseFloat(parts[10]);
+                    DecimalFormat format = new DecimalFormat("0.000");
+
+                    System.out.println("Bytes Recebidos para " + INTERFACE_NAME + ": " + format.format(receivedBytes / 1000000));
+                    System.out.println("Bytes Transmitidos para " + INTERFACE_NAME + ": " + format.format(transmittedBytes / 1000000));
+                    return;
+                }
+            }
+        }
+
+        System.out.println("Interface não encontrada: " + INTERFACE_NAME);
+    }
 }
