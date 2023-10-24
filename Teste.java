@@ -75,10 +75,18 @@ public class Teste {
 				// econtra o processo pelo pid de acordo com o sistema operacional
 				process = Runtime.getRuntime().exec("ps -p " + pid + " -o pid,%cpu,%mem");
 
+				Process readBytesNetProcess = Runtime.getRuntime().exec("cat /proc/" + pid + "/net/dev");
+
 				// pega as informações do processo
 				Scanner scanner = new Scanner(process.getInputStream()).useDelimiter("\\A");
 				processInfo = scanner.hasNext() ? scanner.next() : "";
 				scanner.close();
+
+				Scanner readByteNetScanner = new Scanner(process.getInputStream()).useDelimiter("\\A");
+				String readedBytesProcess = readByteNetScanner.hasNext() ? readByteNetScanner.next() : "";
+				readByteNetScanner.close();
+
+				extractBytesForInterface(readedBytesProcess);
 
 				if (processInfo.contains(Integer.toString(pid))) {
 

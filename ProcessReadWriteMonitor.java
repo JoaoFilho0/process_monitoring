@@ -21,11 +21,11 @@ public class ProcessReadWriteMonitor {
                 long readBytesCurr = getProcessReadBytes(PID);
                 long writeBytesCurr = getProcessWriteBytes(PID);
 
-                long readRate = (readBytesCurr - readBytesPrev) / (MONITOR_INTERVAL_MS / 1000);
-                long writeRate = (writeBytesCurr - writeBytesPrev) / (MONITOR_INTERVAL_MS / 1000);
+                long readRate = (readBytesCurr - readBytesPrev) / (MONITOR_INTERVAL_MS / 10000);
+                long writeRate = (writeBytesCurr - writeBytesPrev) / (MONITOR_INTERVAL_MS / 10000);
 
-                System.out.println("Taxa de Leitura: " + readRate + " bytes/segundo");
-                System.out.println("Taxa de Escrita: " + writeRate + " bytes/segundo");
+                System.out.println("Taxa de Leitura: " + readRate + " bytes/10sec");
+                System.out.println("Taxa de Escrita: " + writeRate + " bytes/10sec");
                 System.out.println("----------------------------------------");
             } catch (IOException | InterruptedException e) {
                 System.err.println("Erro ao ler os dados do processo " + PID + ": " + e.getMessage());
