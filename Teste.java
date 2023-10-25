@@ -65,10 +65,16 @@ public class Teste {
 
 	public static void showInformationProcess(int pid, int tempoDeMonitoramento) throws IOException {
 		DecimalFormat formatador = new DecimalFormat("0.00");
-		final int umMinutoEmMilissegundos = 10000;
+		final int umMinutoEmMilissegundos = 1000;
 		List<Float> listaRegistroMemoria = new ArrayList<>();
 		List<Float> listaRegistroCpu = new ArrayList<>();
+		List<Float> listaRegistroNetRecebido = new ArrayList<>();
+		List<Float> listaRegistroNetTransmitido = new ArrayList<>();
+		List<Float> listaRegistroLeituraDeDisco = new ArrayList<>();
+		List<Float> listaRegistroEscritaDeDisco = new ArrayList<>();
 		String processInfo = null;
+		long kilobyte = 1024;
+		long megabyte = kilobyte * kilobyte;
 
 
 		//Dados previos da leitura do Disco
@@ -97,7 +103,6 @@ public class Teste {
 
 		for (int i = 1; i <= tempoDeMonitoramento; i++) {
 			
-
 			Process process = null;
 
 			try {
@@ -128,24 +133,26 @@ public class Teste {
 				String receivedNetBytesCurrent = receivedAndTransmittedBytesNetCurrent.split("-")[0];
 				String transmittedNetBytesCurrent = receivedAndTransmittedBytesNetCurrent.split("-")[1];
 				
-				float receveidNetBytes = Long.parseLong(receivedNetBytesCurrent) - Long.parseLong(receivedNetPrevBytes);
-				float transmittedNetBytes = Long.parseLong(transmittedNetBytesCurrent) - Long.parseLong(transmittedNetPrevBytes);
+				long receveidNetBytes = Long.parseLong(receivedNetBytesCurrent) - Long.parseLong(receivedNetPrevBytes);
+				long transmittedNetBytes = Long.parseLong(transmittedNetBytesCurrent) - Long.parseLong(transmittedNetPrevBytes);
 
-				float writeBytesIO = writeBytesIOCurrent - writeBytesIOPrev;
-				float readBytesIO = readBytesIOCurrent - readBytesIOPrev; 
+				long writeBytesIO = writeBytesIOCurrent - writeBytesIOPrev;
+				long readBytesIO = readBytesIOCurrent - readBytesIOPrev; 
+
+
 
 				if (processInfo.contains(Integer.toString(pid))) {
 
 					System.out.println(processInfo);
-					System.out.println("Dados de disco escritos: " + writeBytesIO);
-					System.out.println("Dados de disco lidos: " + readBytesIO);
-					System.out.println("Dados de rede recebidos: " + receveidNetBytes);
-					System.out.println("Dados de rede transmitidos: " + transmittedNetBytes);
+					System.out.println("Dados de disco escritos: " + formatador.format(writeBytesIO / megabyte) + " MB");
+					System.out.println("Dados de disco lidos: " + formatador.format(readBytesIO / megabyte) + " MB");
+					System.out.println("Dados de rede recebidos: " + formatador.format(receveidNetBytes / megabyte) + " MB");
+					System.out.println("Dados de rede transmitidos: " + formatador.format(transmittedNetBytes / megabyte) + " MB");
 					
 
-					
-					writeOnLinux(i, pid, processInfo, listaRegistroMemoria, 
-					listaRegistroCpu, readBytesIO, writeBytesIO, receveidNetBytes, transmittedNetBytes);
+					writeOnLinux(i, pid, processInfo, listaRegistroMemoria, listaRegistroCpu, 
+					listaRegistroNetRecebido, listaRegistroNetTransmitido, listaRegistroLeituraDeDisco, listaRegistroEscritaDeDisco,
+					 readBytesIO, writeBytesIO, receveidNetBytes, transmittedNetBytes);
 
 					readBytesIOPrev = readBytesIOCurrent;
 					writeBytesIOPrev = writeBytesIOCurrent;
@@ -178,12 +185,13 @@ public class Teste {
 		}
 
 		if(!listaRegistroMemoria.isEmpty() && !listaRegistroCpu.isEmpty()){
+			System.out.println(listaRegistroCpu);
 			writeResultOnLinux(listaRegistroMemoria, listaRegistroCpu);
 		}
 	}
 
 	public static void writeResultOnLinux(List<Float> listaRegistroMemoria, List<Float> listaRegistroCpu) throws IOException {
-		DecimalFormat formatador = new DecimalFormat("####.###");
+		DecimalFormat formatador = new DecimalFormat("0.00");
 		final int SLA_MIN_MEMORY = 1;
 		final int SLA_MAX_MEMORY = 90; 
 		final int SLA_AVERAGE_MEMORY = 45;
@@ -200,14 +208,17 @@ public class Teste {
 				.average()
 				.orElse(0.0);
 
+
 		float consumoMedioDeCpu = (float) listaRegistroCpu
 				.stream()
 				.mapToDouble(Float::doubleValue)
 				.average()
 				.orElse(0.0);
 
+
 		float consumoMinimoDeMemoria = Collections.min(listaRegistroMemoria);
 		float consumoMinimoDeCpu = Collections.min(listaRegistroCpu);
+		listaRegistroCpu.forEach((item) -> System.out.println(item));
 
 		float consumoMaximoDeMemoria = Collections.max(listaRegistroMemoria);
 		float consumoMaximoDeCpu = Collections.max(listaRegistroCpu);
@@ -244,6 +255,10 @@ public class Teste {
 	String processInforToBeWrite, 
 	List<Float> listaRegistroMemoria, 
 	List<Float> listaRegistroCpu,
+	List<Float> listaRegistroNetRecebido,
+	List<Float> listaRegistroNetTransmitido,
+	List<Float> listaRegistroLeituraDeDisco,
+	List<Float> listaRegistroEscritaDeDisco,
 	float readBytesIOPrev,
 	float writeBytesIOPrev,
 	float receivedNetBytes,
@@ -267,8 +282,15 @@ public class Teste {
 
 		String[] ultimaStringDividida = processInforToBeWrite.split("\\r?\\n")[1].split("\\s+");
 
+		System.out.println(ultimaStringDividida[2]);
+		System.out.println(Float.valueOf(ultimaStringDividida[2]));
+
 		listaRegistroMemoria.add(Float.valueOf(ultimaStringDividida[3]));
 		listaRegistroCpu.add(Float.valueOf(ultimaStringDividida[2]));
+		listaRegistroNetRecebido.add(Float.valueOf(receivedNetBytes));
+		listaRegistroNetTransmitido.add(Float.valueOf(transmittedNetPrevBytes));
+		listaRegistroLeituraDeDisco.add(Float.valueOf(readBytesIOPrev));
+		listaRegistroEscritaDeDisco.add(Float.valueOf(writeBytesIOPrev));
 	}
 
 	public static Float desvioPadrao(List<Float> array) {
@@ -309,18 +331,15 @@ public class Teste {
 	public static String extractBytesForInterface(String data) {
 		DecimalFormat format = new DecimalFormat("####.###");
         String[] lines = data.split("\n");
-		float receivedBytes = 0;
-		float transmittedBytes = 0;
+		long receivedBytes = 0;
+		long transmittedBytes = 0;
         for (String line : lines) {
             if (line.contains(INTERFACE_NAME)) {
                 String[] parts = line.split("\\s+");
                 if (parts.length >= 10) {
-                    receivedBytes = Float.parseFloat(parts[2]);
-                    transmittedBytes = Float.parseFloat(parts[10]);
-                    
+                    receivedBytes = Long.parseLong(parts[2]);
+                    transmittedBytes = Long.parseLong(parts[10]);
 
-                    //System.out.println("Bytes Recebidos para " + INTERFACE_NAME + ": " + format.format(receivedBytes / 1000000));
-                    //System.out.println("Bytes Transmitidos para " + INTERFACE_NAME + ": " + format.format(transmittedBytes / 1000000));
                     break;
                 }
             }

@@ -1,6 +1,19 @@
 ---------------------------------------------------- Relatorio de monitoramento do processo com o PID: 37434 ---------------------------------------------------- 
 
     PID %CPU %MEM
-  37434  5.2  5.0
-  37434  5.2  5.0
-  37434  5.2  5.0
+  37434  7.7  4.7
+  37434  7.7  4.7
+  37434  7.7  4.7
+  37434  7.7  4.7
+  37434  7.7  4.7
+  37434  7.7  4.7
+
+Consumo minimo de memoria: 4,70% | SLA: 1%
+Consumo maximo de memoria: 4,70% | SLA: 90%
+Consumo medio de memoria: 4,70% | SLA: 45%
+Desvio padrao de memoria: 0,00 | SLA: 1%
+
+Consumo minimo de CPU: 7,70% | SLA: 1
+Consumo maximo de CPU: 7,70% | SLA: 98
+Consumo medio de CPU: 7,70% | SLA: 35
+Desvio padrão de CPU: 0,00 | SLA: 1
