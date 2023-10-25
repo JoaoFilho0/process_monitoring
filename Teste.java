@@ -82,7 +82,7 @@ public class Teste {
 				processInfo = scanner.hasNext() ? scanner.next() : "";
 				scanner.close();
 
-				Scanner readByteNetScanner = new Scanner(process.getInputStream()).useDelimiter("\\A");
+				Scanner readByteNetScanner = new Scanner(readBytesNetProcess.getInputStream()).useDelimiter("\\A");
 				String readedBytesProcess = readByteNetScanner.hasNext() ? readByteNetScanner.next() : "";
 				readByteNetScanner.close();
 
