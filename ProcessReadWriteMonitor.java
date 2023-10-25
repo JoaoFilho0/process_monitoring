@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class ProcessReadWriteMonitor {
 
-    private static final int PID = 5068; // Substitua pelo PID do processo desejado
+    private static final int PID = 6338; // Substitua pelo PID do processo desejado
     private static final long MONITOR_INTERVAL_MS = 1000; // Intervalo de monitoramento em milissegundos
 
     public static void main(String[] args) {
@@ -21,8 +21,8 @@ public class ProcessReadWriteMonitor {
                 long readBytesCurr = getProcessReadBytes(PID);
                 long writeBytesCurr = getProcessWriteBytes(PID);
 
-                long readRate = (readBytesCurr - readBytesPrev) / (MONITOR_INTERVAL_MS / 10000);
-                long writeRate = (writeBytesCurr - writeBytesPrev) / (MONITOR_INTERVAL_MS / 10000);
+                long readRate = (readBytesCurr - readBytesPrev) / (MONITOR_INTERVAL_MS / 1000);
+                long writeRate = (writeBytesCurr - writeBytesPrev) / (MONITOR_INTERVAL_MS / 1000);
 
                 System.out.println("Taxa de Leitura: " + readRate + " bytes/10sec");
                 System.out.println("Taxa de Escrita: " + writeRate + " bytes/10sec");

@@ -1,6 +1,9 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -61,43 +64,99 @@ public class Teste {
 	}
 
 	public static void showInformationProcess(int pid, int tempoDeMonitoramento) throws IOException {
+		DecimalFormat formatador = new DecimalFormat("0.00");
 		final int umMinutoEmMilissegundos = 10000;
 		List<Float> listaRegistroMemoria = new ArrayList<>();
 		List<Float> listaRegistroCpu = new ArrayList<>();
 		String processInfo = null;
 
+
+		//Dados previos da leitura do Disco
+		long readBytesIOPrev = getProcessIoStat("/proc/" + pid + "/io", "read_bytes");
+		long writeBytesIOPrev = getProcessIoStat("/proc/" + pid + "/io", "write_bytes");
+
+
+		//Dados previos da leitura da Internet
+		Process readBytesNetProcess = Runtime.getRuntime().exec("cat /proc/" + pid + "/net/dev");
+
+		Scanner readByteNetScanner = new Scanner(readBytesNetProcess.getInputStream()).useDelimiter("\\A");
+		String readedBytesProcess = readByteNetScanner.hasNext() ? readByteNetScanner.next() : "";
+		readByteNetScanner.close();
+
+		String receivedAndTransmittedBytesNet = extractBytesForInterface(readedBytesProcess);
+		String receivedNetPrevBytes = receivedAndTransmittedBytesNet.split("-")[0];
+		String transmittedNetPrevBytes = receivedAndTransmittedBytesNet.split("-")[1];
+
+			try {
+				Thread.sleep(1000);
+
+			} catch (InterruptedException e) {
+				System.out.println("Algo deu errado!");
+			}
+		
+
 		for (int i = 1; i <= tempoDeMonitoramento; i++) {
+			
 
 			Process process = null;
 
 			try {
 
+				
 				// econtra o processo pelo pid de acordo com o sistema operacional
 				process = Runtime.getRuntime().exec("ps -p " + pid + " -o pid,%cpu,%mem");
 
-				Process readBytesNetProcess = Runtime.getRuntime().exec("cat /proc/" + pid + "/net/dev");
 
 				// pega as informações do processo
 				Scanner scanner = new Scanner(process.getInputStream()).useDelimiter("\\A");
 				processInfo = scanner.hasNext() ? scanner.next() : "";
 				scanner.close();
 
-				Scanner readByteNetScanner = new Scanner(readBytesNetProcess.getInputStream()).useDelimiter("\\A");
-				String readedBytesProcess = readByteNetScanner.hasNext() ? readByteNetScanner.next() : "";
-				readByteNetScanner.close();
+				//Dados atuais da leitura do Disco
+				long readBytesIOCurrent = getProcessIoStat("/proc/" + pid + "/io", "read_bytes");
+				long writeBytesIOCurrent = getProcessIoStat("/proc/" + pid + "/io", "write_bytes");
 
-				extractBytesForInterface(readedBytesProcess);
+
+				//Dados atuais da leitura da Internet
+				Process readBytesNetProcessCurrent = Runtime.getRuntime().exec("cat /proc/" + pid + "/net/dev");
+
+				Scanner readByteNetScannerCurrent = new Scanner(readBytesNetProcessCurrent.getInputStream()).useDelimiter("\\A");
+				String readedBytesProcessCurrent = readByteNetScannerCurrent.hasNext() ? readByteNetScannerCurrent.next() : "";
+				readByteNetScannerCurrent.close();
+
+				String receivedAndTransmittedBytesNetCurrent = extractBytesForInterface(readedBytesProcessCurrent);
+				String receivedNetBytesCurrent = receivedAndTransmittedBytesNetCurrent.split("-")[0];
+				String transmittedNetBytesCurrent = receivedAndTransmittedBytesNetCurrent.split("-")[1];
+				
+				float receveidNetBytes = Long.parseLong(receivedNetBytesCurrent) - Long.parseLong(receivedNetPrevBytes);
+				float transmittedNetBytes = Long.parseLong(transmittedNetBytesCurrent) - Long.parseLong(transmittedNetPrevBytes);
+
+				float writeBytesIO = writeBytesIOCurrent - writeBytesIOPrev;
+				float readBytesIO = readBytesIOCurrent - readBytesIOPrev; 
 
 				if (processInfo.contains(Integer.toString(pid))) {
 
 					System.out.println(processInfo);
+					System.out.println("Dados de disco escritos: " + writeBytesIO);
+					System.out.println("Dados de disco lidos: " + readBytesIO);
+					System.out.println("Dados de rede recebidos: " + receveidNetBytes);
+					System.out.println("Dados de rede transmitidos: " + transmittedNetBytes);
+					
 
-					writeOnLinux(i, pid, processInfo, listaRegistroMemoria, listaRegistroCpu);
+					
+					writeOnLinux(i, pid, processInfo, listaRegistroMemoria, 
+					listaRegistroCpu, readBytesIO, writeBytesIO, receveidNetBytes, transmittedNetBytes);
 
+					readBytesIOPrev = readBytesIOCurrent;
+					writeBytesIOPrev = writeBytesIOCurrent;
+					receivedNetPrevBytes = receivedNetBytesCurrent;
+					transmittedNetPrevBytes = transmittedNetBytesCurrent;
 				} else {
 					System.out.println("O processo com PID " + pid + " não foi encontrado.");
 					break;
 				}
+
+				
 			} catch (IOException e) {
 				System.out.println(
 						"Ocorreu algum erro ao tentar capturar ou escrever as informações do processo no arquivo");
@@ -124,7 +183,7 @@ public class Teste {
 	}
 
 	public static void writeResultOnLinux(List<Float> listaRegistroMemoria, List<Float> listaRegistroCpu) throws IOException {
-		DecimalFormat formatador = new DecimalFormat("0.00");
+		DecimalFormat formatador = new DecimalFormat("####.###");
 		final int SLA_MIN_MEMORY = 1;
 		final int SLA_MAX_MEMORY = 90; 
 		final int SLA_AVERAGE_MEMORY = 45;
@@ -180,7 +239,15 @@ public class Teste {
 		writer.close();
 	}
 
-	public static void writeOnLinux(int indexDeEscrita, int pid, String processInforToBeWrite, List<Float> listaRegistroMemoria, List<Float> listaRegistroCpu) throws IOException {
+	public static void writeOnLinux(int indexDeEscrita, 
+	int pid, 
+	String processInforToBeWrite, 
+	List<Float> listaRegistroMemoria, 
+	List<Float> listaRegistroCpu,
+	float readBytesIOPrev,
+	float writeBytesIOPrev,
+	float receivedNetBytes,
+	float transmittedNetPrevBytes) throws IOException {
 		BufferedWriter writer = new BufferedWriter(new FileWriter("arquivoDeMonitoramento.txt", indexDeEscrita != 1));
 
 		if (indexDeEscrita == 1) {
@@ -239,24 +306,49 @@ public class Teste {
 		return tudoIgual;
 	}
 
-	public static void extractBytesForInterface(String data) {
+	public static String extractBytesForInterface(String data) {
+		DecimalFormat format = new DecimalFormat("####.###");
         String[] lines = data.split("\n");
-
+		float receivedBytes = 0;
+		float transmittedBytes = 0;
         for (String line : lines) {
             if (line.contains(INTERFACE_NAME)) {
                 String[] parts = line.split("\\s+");
                 if (parts.length >= 10) {
-                    float receivedBytes = Float.parseFloat(parts[2]);
-                    float transmittedBytes = Float.parseFloat(parts[10]);
-                    DecimalFormat format = new DecimalFormat("0.000");
+                    receivedBytes = Float.parseFloat(parts[2]);
+                    transmittedBytes = Float.parseFloat(parts[10]);
+                    
 
-                    System.out.println("Bytes Recebidos para " + INTERFACE_NAME + ": " + format.format(receivedBytes / 1000000));
-                    System.out.println("Bytes Transmitidos para " + INTERFACE_NAME + ": " + format.format(transmittedBytes / 1000000));
-                    return;
+                    //System.out.println("Bytes Recebidos para " + INTERFACE_NAME + ": " + format.format(receivedBytes / 1000000));
+                    //System.out.println("Bytes Transmitidos para " + INTERFACE_NAME + ": " + format.format(transmittedBytes / 1000000));
+                    break;
                 }
             }
         }
 
-        System.out.println("Interface não encontrada: " + INTERFACE_NAME);
+		return format.format(receivedBytes) + "-" + format.format(transmittedBytes);
+
+        //System.out.println("Interface não encontrada: " + INTERFACE_NAME);
+    }
+
+	    private static long getProcessIoStat(String filePath, String statName) throws IOException {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(filePath));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith(statName)) {
+                    String[] parts = line.split("\\s+");
+                    if (parts.length == 2) {
+                        return Long.parseLong(parts[1]);
+                    }
+                }
+            }
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+        return -1;
     }
 }

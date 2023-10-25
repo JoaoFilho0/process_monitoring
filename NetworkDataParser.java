@@ -7,9 +7,9 @@ public class NetworkDataParser {
     public static void main(String[] args) {
         String data = "Inter-|   Receive                                                |  Transmit\n" +
                       " face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed\n" +
-                      "    lo:  116731    1012    0    0    0     0          0         0   116731    1012    0    0    0     0       0          0\n" +
+                      "   lo: 1542519    8908    0    0    0     0          0         0  1542519    8908    0    0    0     0       0          0\n" +
                       "enp1s0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" +
-                      "  wlo1: 17805620   22068    0   18    0     0          0         0  1086480    4665    0    0    0     0       0          0\n" +
+                      "  wlo1: 19391613   70373    0    8    0     0          0         0  8846753   12572    0    0    0     0       0          0\n" +
                       "docker0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0";
 
         extractBytesForInterface(data, "wlo1");
