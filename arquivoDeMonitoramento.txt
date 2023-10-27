@@ -1,19 +1,93 @@
----------------------------------------------------- Relatorio de monitoramento do processo com o PID: 37434 ---------------------------------------------------- 
+---------------------------------------------------- Relatorio de monitoramento do processo com o PID: 2649 ---------------------------------------------------- 
 
     PID %CPU %MEM
-  37434  7.7  4.7
-  37434  7.7  4.7
-  37434  7.7  4.7
-  37434  7.7  4.7
-  37434  7.7  4.7
-  37434  7.7  4.7
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
+   2649  7.2  7.2
 
-Consumo minimo de memoria: 4,70% | SLA: 1%
-Consumo maximo de memoria: 4,70% | SLA: 90%
-Consumo medio de memoria: 4,70% | SLA: 45%
+Consumo minimo de memoria: 7,20% | SLA: 1%
+Consumo maximo de memoria: 7,20% | SLA: 90%
+Consumo medio de memoria: 7,20% | SLA: 45%
 Desvio padrao de memoria: 0,00 | SLA: 1%
 
-Consumo minimo de CPU: 7,70% | SLA: 1
-Consumo maximo de CPU: 7,70% | SLA: 98
-Consumo medio de CPU: 7,70% | SLA: 35
-Desvio padrão de CPU: 0,00 | SLA: 1
+Consumo minimo de CPU: 7,20% | SLA: 1%
+Consumo maximo de CPU: 7,20% | SLA: 98%
+Consumo medio de CPU: 7,20% | SLA: 35%
+Desvio padrão de CPU: 0,00 | SLA: 1%
+
+Taxa de leitura mínima de disco: 0,00MB | SLA: 1MB
+Taxa de leitura maximo de disco: 13,00MB | SLA: 98MB
+Taxa de leitura médio de disco: 0,00MB | SLA: 98MB
+Desvio padrão de leitura de disco: 0,00MB | SLA: 1MB
+
+Taxa de escrita mínima de disco: 0,00MB | SLA: 1MB
+Taxa de escrita máxima de disco: 13,00MB | SLA: 98MB
+Taxa de escrita médio de disco: 0,27MB | SLA: 98MB
+Desvio padrão de escrita de disco: 0,03MB | SLA: 1MB
+
+Taxa de recebimento de dados pela net: 0,00MB | SLA: 1MB
+Taxa de recebimento máxima de dados pela net: 12,00MB | SLA: 98MB
+Taxa de recebimento médio de dados pela net: 3,23MB | SLA: 98MB
+Desvio padrão de recebimento de dados pela net: 0,36MB | SLA: 1MB
+
+Taxa de transmissão de dados pela net: 5,00MB | SLA: 1MB
+Taxa de transmissão máxima de dados pela net: 14,00MB | SLA: 98MB
+Taxa de transmissão médio de dados pela net: 11,78MB | SLA: 98MB
+Desvio padrão de transmissão dados pela net: 0,23MB | SLA: 1MB

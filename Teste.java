@@ -44,8 +44,8 @@ public class Teste {
 
 			if (scanner.hasNextInt()) {
 				tempoDeMonitoramento = scanner.nextInt();
-				System.out.println("Os dados serão medidos a cada 10 segundos até chegar em " + tempoDeMonitoramento + " minuto(s)");
-				tempoDeMonitoramento *= 6;
+				System.out.println("Os dados serão medidos a cada 1 segundos até chegar em " + tempoDeMonitoramento + " minuto(s)");
+				tempoDeMonitoramento *= 60;
 
 				break;
 			}
@@ -133,21 +133,21 @@ public class Teste {
 				String receivedNetBytesCurrent = receivedAndTransmittedBytesNetCurrent.split("-")[0];
 				String transmittedNetBytesCurrent = receivedAndTransmittedBytesNetCurrent.split("-")[1];
 				
-				long receveidNetBytes = Long.parseLong(receivedNetBytesCurrent) - Long.parseLong(receivedNetPrevBytes);
-				long transmittedNetBytes = Long.parseLong(transmittedNetBytesCurrent) - Long.parseLong(transmittedNetPrevBytes);
+				float receveidNetBytes = (Long.parseLong(receivedNetBytesCurrent) - Long.parseLong(receivedNetPrevBytes)) / megabyte;
+				float transmittedNetBytes = (Long.parseLong(transmittedNetBytesCurrent) - Long.parseLong(transmittedNetPrevBytes)) / megabyte;
 
-				long writeBytesIO = writeBytesIOCurrent - writeBytesIOPrev;
-				long readBytesIO = readBytesIOCurrent - readBytesIOPrev; 
+				float writeBytesIO = (writeBytesIOCurrent - writeBytesIOPrev) / megabyte;
+				float readBytesIO = (readBytesIOCurrent - readBytesIOPrev) / megabyte; 
 
 
 
 				if (processInfo.contains(Integer.toString(pid))) {
 
 					System.out.println(processInfo);
-					System.out.println("Dados de disco escritos: " + formatador.format(writeBytesIO / megabyte) + " MB");
-					System.out.println("Dados de disco lidos: " + formatador.format(readBytesIO / megabyte) + " MB");
-					System.out.println("Dados de rede recebidos: " + formatador.format(receveidNetBytes / megabyte) + " MB");
-					System.out.println("Dados de rede transmitidos: " + formatador.format(transmittedNetBytes / megabyte) + " MB");
+					System.out.println("Dados de disco escritos: " + formatador.format(writeBytesIO) + " MB");
+					System.out.println("Dados de disco lidos: " + formatador.format(readBytesIO) + " MB");
+					System.out.println("Dados de rede recebidos: " + formatador.format(receveidNetBytes) + " MB");
+					System.out.println("Dados de rede transmitidos: " + formatador.format(transmittedNetBytes) + " MB");
 					
 
 					writeOnLinux(i, pid, processInfo, listaRegistroMemoria, listaRegistroCpu, 
@@ -185,16 +185,34 @@ public class Teste {
 		}
 
 		if(!listaRegistroMemoria.isEmpty() && !listaRegistroCpu.isEmpty()){
-			System.out.println(listaRegistroCpu);
-			writeResultOnLinux(listaRegistroMemoria, listaRegistroCpu);
+			writeResultOnLinux(listaRegistroMemoria, listaRegistroCpu, listaRegistroLeituraDeDisco, listaRegistroEscritaDeDisco, 
+			listaRegistroNetRecebido, listaRegistroNetTransmitido);
 		}
 	}
 
-	public static void writeResultOnLinux(List<Float> listaRegistroMemoria, List<Float> listaRegistroCpu) throws IOException {
+	public static void writeResultOnLinux(List<Float> listaRegistroMemoria, List<Float> listaRegistroCpu, 
+											List<Float> listaRegistroLeituraDeDisco, List<Float> listaRegistroEscritaDeDisco,
+											List<Float> listaRegistroNetRecebido, List<Float> listaRegistroNetTransmitido) throws IOException {
 		DecimalFormat formatador = new DecimalFormat("0.00");
 		final int SLA_MIN_MEMORY = 1;
 		final int SLA_MAX_MEMORY = 90; 
 		final int SLA_AVERAGE_MEMORY = 45;
+
+		final int SLA_MIN_OUTPUT_DISK = 1;
+		final int SLA_MAX_OUTPUT_DISK = 10;
+		final int SLA_AVERAGE_OUTPUT_DISK = 5;
+
+		final int SLA_MIN_INPUT_DISK = 1;
+		final int SLA_MAX_INPUT_DISK = 10;
+		final int SLA_AVERAGE_INPUT_DISK = 5;
+
+		final int SLA_MIN_RECEIVE_NET = 1;
+		final int SLA_MAX_RECEIVE_NET = 10;
+		final int SLA_AVERAGE_RECEIVE_NET = 5;
+
+		final int SLA_MIN_TRANSMISSION_NET = 1;
+		final int SLA_MAX_TRANSMISSION_NET = 10;
+		final int SLA_AVERAGE_TRANSMISSION_NET = 5;
 
 		final int SLA_MIN_CPU = 1;
 		final int SLA_MAX_CPU = 98; 
@@ -208,45 +226,116 @@ public class Teste {
 				.average()
 				.orElse(0.0);
 
-
 		float consumoMedioDeCpu = (float) listaRegistroCpu
 				.stream()
 				.mapToDouble(Float::doubleValue)
 				.average()
 				.orElse(0.0);
 
+		float taxaDeLeituraMediaDeDisco = (float) listaRegistroLeituraDeDisco
+				.stream()
+				.mapToDouble(Float::doubleValue)
+				.average()
+				.orElse(0.0);
+
+		float taxaDeEscritaMediaDeDisco = (float) listaRegistroEscritaDeDisco
+				.stream()
+				.mapToDouble(Float::doubleValue)
+				.average()
+				.orElse(0.0);
+
+		float taxaMediaDeDadosRecebidoPelaNet = (float) listaRegistroNetRecebido
+				.stream()
+				.mapToDouble(Float::doubleValue)
+				.average()
+				.orElse(0.0);
+
+		float taxaDeTransmicaoMediaPelaNet = (float) listaRegistroNetTransmitido
+				.stream()
+				.mapToDouble(Float::doubleValue)
+				.average()
+				.orElse(0.0);
 
 		float consumoMinimoDeMemoria = Collections.min(listaRegistroMemoria);
 		float consumoMinimoDeCpu = Collections.min(listaRegistroCpu);
-		listaRegistroCpu.forEach((item) -> System.out.println(item));
+		float taxaDeLeituraMinimaDeDisco = Collections.min(listaRegistroEscritaDeDisco);
+		float taxaDeEscritaMinimaDeDisco = Collections.min(listaRegistroEscritaDeDisco);
+		float taxaMinimaDeDadosRecebidoPelaNet = Collections.min(listaRegistroNetRecebido);
+		float taxaDeTransmicaoMinimaPelaNet = Collections.min(listaRegistroNetTransmitido);
 
 		float consumoMaximoDeMemoria = Collections.max(listaRegistroMemoria);
 		float consumoMaximoDeCpu = Collections.max(listaRegistroCpu);
+		float taxaDeLeituraMaximaDeDisco = Collections.max(listaRegistroEscritaDeDisco);
+		float taxaDeEscritaMaximaDeDisco = Collections.max(listaRegistroEscritaDeDisco);
+		float taxaMaximaDeDadosRecebidoPelaNet = Collections.max(listaRegistroNetRecebido);
+		float taxaDeTransmicaoMaximaPelaNet = Collections.max(listaRegistroNetTransmitido);
 
 		float desvioPadraoDeMemoria = desvioPadrao(listaRegistroMemoria);
 		float desvioPadraoDeCpu = desvioPadrao(listaRegistroCpu);
+		float desvioPadraoDeLeituraDeDisco = desvioPadrao(listaRegistroLeituraDeDisco);
+		float desvioPadraoDeEscritaDeDisco = desvioPadrao(listaRegistroEscritaDeDisco);
+		float desvioPadraoDeRecebimentoPelaNet = desvioPadrao(listaRegistroNetRecebido);
+		float desvioPadraoDeTransmicaoPelaNet = desvioPadrao(listaRegistroNetTransmitido);
 
-		System.out.println("Consumo minimo de memoria: " + formatador.format(consumoMinimoDeMemoria) + "% | SLA: " + SLA_MIN_MEMORY + "%" );
-		System.out.println("Consumo minimo de CPU: " + formatador.format(consumoMinimoDeCpu) + "% | SLA: " + SLA_MIN_CPU + "%\n" );
+		System.out.println("\n\nConsumo minimo de memoria: " + formatador.format(consumoMinimoDeMemoria) + "% | SLA: " + SLA_MIN_MEMORY + "%" );
+		System.out.println("Consumo minimo de CPU: " + formatador.format(consumoMinimoDeCpu) + "% | SLA: " + SLA_MIN_CPU + "%" );
+		System.out.println("Taxa de leitura mínima de disco: " + formatador.format(taxaDeLeituraMinimaDeDisco) + "MB | SLA: " + SLA_MIN_OUTPUT_DISK + "MB" );
+		System.out.println("Taxa de escrita mínima de disco: " + formatador.format(taxaDeEscritaMinimaDeDisco) + "MB | SLA: " + SLA_MIN_INPUT_DISK + "MB" );
+		System.out.println("Taxa de recebimento de dados pela net: " + formatador.format(taxaMinimaDeDadosRecebidoPelaNet) + "MB | SLA: " + SLA_MIN_RECEIVE_NET + "MB" );
+		System.out.println("Taxa de transmissão de dados pela net: " + formatador.format(taxaDeTransmicaoMinimaPelaNet) + "MB | SLA: " + SLA_MIN_TRANSMISSION_NET + "MB\n" );
 
 		System.out.println("Consumo maximo de memoria: " + formatador.format(consumoMaximoDeMemoria) + "% | SLA: " + SLA_MAX_MEMORY + "%" );
-		System.out.println("Consumo maximo de CPU: " + formatador.format(consumoMaximoDeCpu) + "% | SLA: " + SLA_MAX_CPU + "%\n" );
+		System.out.println("Consumo maximo de CPU: " + formatador.format(consumoMaximoDeCpu) + "% | SLA: " + SLA_MAX_CPU + "%" );
+		System.out.println("Taxa de leitura maximo de disco: " + formatador.format(taxaDeLeituraMaximaDeDisco) + "MB | SLA: " + SLA_MAX_OUTPUT_DISK + "MB" );
+		System.out.println("Taxa de escrita máxima de disco: " + formatador.format(taxaDeEscritaMaximaDeDisco) + "MB | SLA: " + SLA_MAX_INPUT_DISK + "MB" );
+		System.out.println("Taxa de recebimento máxima de dados pela net: " + formatador.format(taxaMaximaDeDadosRecebidoPelaNet) + "MB | SLA: " + SLA_MAX_RECEIVE_NET + "MB" );
+		System.out.println("Taxa de transmissão máxima de dados pela net: " + formatador.format(taxaDeTransmicaoMaximaPelaNet) + "MB | SLA: " + SLA_MAX_TRANSMISSION_NET + "MB\n" );
 
 		System.out.println("Consumo medio de memoria: " + formatador.format(consumoMedioDeMemoria) + "% | SLA: " + SLA_AVERAGE_MEMORY + "%" );
-		System.out.println("Consumo medio de CPU: " + formatador.format(consumoMedioDeCpu) + "% | SLA: " + SLA_AVERAGE_CPU + "%\n" );
+		System.out.println("Consumo medio de CPU: " + formatador.format(consumoMedioDeCpu) + "% | SLA: " + SLA_AVERAGE_CPU + "%" );
+		System.out.println("Taxa de leitura médio de disco: " + formatador.format(taxaDeLeituraMediaDeDisco) + "MB | SLA: " + SLA_AVERAGE_OUTPUT_DISK + "MB" );
+		System.out.println("Taxa de escrita médio de disco: " + formatador.format(taxaDeEscritaMediaDeDisco) + "MB | SLA: " + SLA_AVERAGE_INPUT_DISK + "MB" );
+		System.out.println("Taxa de recebimento médio de dados pela net: " + formatador.format(taxaMediaDeDadosRecebidoPelaNet) + " MB| SLA: " + SLA_AVERAGE_RECEIVE_NET + "MB" );
+		System.out.println("Taxa de transmissão médio de dados pela net: " + formatador.format(taxaDeTransmicaoMediaPelaNet) + "MB | SLA: " + SLA_AVERAGE_TRANSMISSION_NET + "MB\n" );
 
 		System.out.println("Desvio padrao de memoria: " + formatador.format(desvioPadraoDeMemoria) + " | SLA: " + SLA_STANDARD_DEVIATION + "%" );
-		System.out.println("Desvio padrão de CPU: " + formatador.format(desvioPadraoDeCpu) + " | SLA: " + SLA_STANDARD_DEVIATION + "\n");
+		System.out.println("Desvio padrão de CPU: " + formatador.format(desvioPadraoDeCpu) + " | SLA: " + SLA_STANDARD_DEVIATION + "");
+		System.out.println("Desvio padrão de leitura de disco: " + formatador.format(desvioPadraoDeLeituraDeDisco) + "MB | SLA: " + SLA_STANDARD_DEVIATION + "MB" );
+		System.out.println("Desvio padrão de escrita de disco: " + formatador.format(desvioPadraoDeEscritaDeDisco) + "MB | SLA: " + SLA_STANDARD_DEVIATION + "MB" );
+		System.out.println("Desvio padrão de recebimento de dados pela net: " + formatador.format(desvioPadraoDeRecebimentoPelaNet) + "MB | SLA: " + SLA_STANDARD_DEVIATION + "MB" );
+		System.out.println("Desvio padrão de transmissão dados pela net: " + formatador.format(desvioPadraoDeTransmicaoPelaNet) + "MB | SLA: " + SLA_STANDARD_DEVIATION + "MB\n" );
 
 		BufferedWriter writer = new BufferedWriter(new FileWriter("arquivoDeMonitoramento.txt", true));
 		writer.append("\n\nConsumo minimo de memoria: " + formatador.format(consumoMinimoDeMemoria) + "% | SLA: " + SLA_MIN_MEMORY + "%" );
 		writer.append("\nConsumo maximo de memoria: " + formatador.format(consumoMaximoDeMemoria) + "% | SLA: " + SLA_MAX_MEMORY + "%" );
 		writer.append("\nConsumo medio de memoria: " + formatador.format(consumoMedioDeMemoria) + "% | SLA: " + SLA_AVERAGE_MEMORY + "%" );
 		writer.append("\nDesvio padrao de memoria: " + formatador.format(desvioPadraoDeMemoria) + " | SLA: " + SLA_STANDARD_DEVIATION + "%" );
-		writer.append("\n\nConsumo minimo de CPU: " + formatador.format(consumoMinimoDeCpu) + "% | SLA: " + SLA_MIN_CPU );
-		writer.append("\nConsumo maximo de CPU: " + formatador.format(consumoMaximoDeCpu) + "% | SLA: " + SLA_MAX_CPU);
-		writer.append("\nConsumo medio de CPU: " + formatador.format(consumoMedioDeCpu) + "% | SLA: " + SLA_AVERAGE_CPU );
-		writer.append("\nDesvio padrão de CPU: " + formatador.format(desvioPadraoDeCpu) + " | SLA: " + SLA_STANDARD_DEVIATION);
+		
+		writer.append("\n\nConsumo minimo de CPU: " + formatador.format(consumoMinimoDeCpu) + "% | SLA: " + SLA_MIN_CPU + "%");
+		writer.append("\nConsumo maximo de CPU: " + formatador.format(consumoMaximoDeCpu) + "% | SLA: " + SLA_MAX_CPU + "%");
+		writer.append("\nConsumo medio de CPU: " + formatador.format(consumoMedioDeCpu) + "% | SLA: " + SLA_AVERAGE_CPU + "%");
+		writer.append("\nDesvio padrão de CPU: " + formatador.format(desvioPadraoDeCpu) + " | SLA: " + SLA_STANDARD_DEVIATION + "%");
+		
+		writer.append("\n\nTaxa de leitura mínima de disco: " + formatador.format(taxaDeLeituraMinimaDeDisco) + "MB | SLA: " + SLA_MIN_CPU + "MB" );
+		writer.append("\nTaxa de leitura maximo de disco: " + formatador.format(taxaDeLeituraMaximaDeDisco) + "MB | SLA: " + SLA_MAX_CPU + "MB" );
+		writer.append("\nTaxa de leitura médio de disco: " + formatador.format(taxaDeLeituraMediaDeDisco) + "MB | SLA: " + SLA_MAX_CPU + "MB" );
+		writer.append("\nDesvio padrão de leitura de disco: " + formatador.format(desvioPadraoDeLeituraDeDisco) + "MB | SLA: " + SLA_STANDARD_DEVIATION + "MB" );
+
+		writer.append("\n\nTaxa de escrita mínima de disco: " + formatador.format(taxaDeEscritaMinimaDeDisco) + "MB | SLA: " + SLA_MIN_CPU + "MB" );
+		writer.append("\nTaxa de escrita máxima de disco: " + formatador.format(taxaDeEscritaMaximaDeDisco) + "MB | SLA: " + SLA_MAX_CPU + "MB" );
+		writer.append("\nTaxa de escrita médio de disco: " + formatador.format(taxaDeEscritaMediaDeDisco) + "MB | SLA: " + SLA_MAX_CPU + "MB" );
+		writer.append("\nDesvio padrão de escrita de disco: " + formatador.format(desvioPadraoDeEscritaDeDisco) + "MB | SLA: " + SLA_STANDARD_DEVIATION + "MB" );
+
+		writer.append("\n\nTaxa de recebimento de dados pela net: " + formatador.format(taxaMinimaDeDadosRecebidoPelaNet) + "MB | SLA: " + SLA_MIN_CPU + "MB" );
+		writer.append("\nTaxa de recebimento máxima de dados pela net: " + formatador.format(taxaMaximaDeDadosRecebidoPelaNet) + "MB | SLA: " + SLA_MAX_CPU + "MB" );
+		writer.append("\nTaxa de recebimento médio de dados pela net: " + formatador.format(taxaMediaDeDadosRecebidoPelaNet) + "MB | SLA: " + SLA_MAX_CPU + "MB" );
+		writer.append("\nDesvio padrão de recebimento de dados pela net: " + formatador.format(desvioPadraoDeRecebimentoPelaNet) + "MB | SLA: " + SLA_STANDARD_DEVIATION + "MB" );
+
+		writer.append("\n\nTaxa de transmissão de dados pela net: " + formatador.format(taxaDeTransmicaoMinimaPelaNet) + "MB | SLA: " + SLA_MIN_CPU + "MB" );
+		writer.append("\nTaxa de transmissão máxima de dados pela net: " + formatador.format(taxaDeTransmicaoMaximaPelaNet) + "MB | SLA: " + SLA_MAX_CPU + "MB" );
+		writer.append("\nTaxa de transmissão médio de dados pela net: " + formatador.format(taxaDeTransmicaoMediaPelaNet) + "MB | SLA: " + SLA_MAX_CPU + "MB" );
+		writer.append("\nDesvio padrão de transmissão dados pela net: " + formatador.format(desvioPadraoDeTransmicaoPelaNet) + "MB | SLA: " + SLA_STANDARD_DEVIATION + "MB" );
+
 		writer.close();
 	}
 
@@ -281,9 +370,6 @@ public class Teste {
 		}
 
 		String[] ultimaStringDividida = processInforToBeWrite.split("\\r?\\n")[1].split("\\s+");
-
-		System.out.println(ultimaStringDividida[2]);
-		System.out.println(Float.valueOf(ultimaStringDividida[2]));
 
 		listaRegistroMemoria.add(Float.valueOf(ultimaStringDividida[3]));
 		listaRegistroCpu.add(Float.valueOf(ultimaStringDividida[2]));
@@ -346,8 +432,6 @@ public class Teste {
         }
 
 		return format.format(receivedBytes) + "-" + format.format(transmittedBytes);
-
-        //System.out.println("Interface não encontrada: " + INTERFACE_NAME);
     }
 
 	    private static long getProcessIoStat(String filePath, String statName) throws IOException {
